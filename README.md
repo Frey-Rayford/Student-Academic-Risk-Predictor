@@ -1,4 +1,4 @@
-﻿# Student Academic Risk Predictor
+# Student Academic Risk Predictor
 
 [Tiếng Việt](#tiếng-việt) • [English](#english)
 
@@ -9,14 +9,14 @@
 
 ## 1. Bài Toán Thực Tế
 
-Ở trường đại học, sinh viên thường chỉ nhận ra mình sắp rớt môn khi đã bước vào tuần 13 - 15. Lúc này thì điểm quá trình đã chốt, số buổi vắng đã vượt khung và gần như không còn cơ hội sửa sai.
+Ở trường đại học, sinh viên thường chỉ nhận ra mình sắp rớt môn khi môn học đã gần kết thúc (buổi 8 - 9 đối với môn 9 tuần, hoặc tuần 13 - 15 đối với học kỳ 15 tuần truyền thống). Lúc này thì điểm quá trình đã chốt, số buổi vắng đã vượt khung 20% quy chế và gần như không còn cơ hội cứu vãn.
 
-Dự án này giải quyết bài toán: **Dựa vào dữ liệu học tập 6 - 8 tuần đầu (khi chưa hề có điểm thi cuối kỳ), làm sao phát hiện sớm sinh viên đang có nguy cơ rớt môn để kịp thời hỗ trợ?**
+Dự án này giải quyết bài toán: **Dựa vào dữ liệu ở mốc 50% thời lượng môn học (sau 4 - 5 buổi đối với môn 9 tuần, hoặc tuần 6 - 8 đối với kỳ 15 tuần, khi chưa hề có điểm thi cuối kỳ), làm sao phát hiện sớm sinh viên đang có nguy cơ rớt môn để kịp thời hỗ trợ?**
 
 ### Tại sao không dùng công thức tính điểm thông thường?
 - Nếu chờ có điểm thi rồi nhân hệ số cộng lại thì đó chỉ là phép tính số học, không giúp ích gì cho việc can thiệp sớm.
-- Ở giai đoạn giữa kỳ, hành vi học tập của sinh viên mang tính phi tuyến tính:
-  - Có bạn điểm danh đầy đủ nhưng điểm kiểm tra lại tụt dần qua các tuần.
+- Ở giai đoạn giữa môn, hành vi học tập của sinh viên mang tính phi tuyến tính:
+  - Có bạn điểm danh đầy đủ nhưng điểm kiểm tra lại tụt dần qua các buổi.
   - Có bạn vắng 2 buổi nhưng bài tập thực hành vẫn đạt điểm tốt.
   - Có bạn đang gánh quá nhiều tín chỉ kết hợp nợ môn ở kỳ trước, dẫn đến quá tải.
 - Machine Learning giúp kết hợp các tín hiệu hành vi (chuyên cần, xu hướng điểm, tải học vụ, giờ tự học) để ước lượng xác suất rủi ro trước khi quá muộn.
@@ -128,13 +128,13 @@ Truy cập trình duyệt: `http://localhost:8000` để thử nghiệm nạp c�
 
 ## 1. Problem Statement
 
-In higher education, struggling students often realize they are failing only around weeks 13 - 15, when progress grades are finalized and attendance rules make failure unavoidable.
+In higher education, struggling students often realize they are failing only when the course is nearly finished (sessions 8 - 9 in 9-week modular courses, or weeks 13 - 15 in traditional 15-week semesters). By that point, formative grades are locked, attendance deficits exceed institutional thresholds (e.g., 20% absence limits), and recovery is virtually impossible.
 
-This project addresses the problem: **Using academic and behavioral data from the first 6 - 8 weeks of the semester (before final exams exist), how can we identify students at risk of course failure early enough to provide targeted academic support?**
+This project addresses the problem: **Using academic and behavioral data collected at the 50% milestone (after sessions 4 - 5 in 9-week courses, or weeks 6 - 8 in 15-week semesters, before any final exams take place), how can we identify students at risk of course failure early enough to provide targeted academic support?**
 
 ### Why not simple deterministic grading arithmetic?
 - Final grade calculation is simple arithmetic, but it only happens after final exams are taken.
-- At mid-semester, student performance signals are non-linear:
+- At mid-course, student performance signals are non-linear:
   - Some students attend all lectures but show declining test scores.
   - Some students miss 2 sessions but maintain strong practical lab marks.
   - Some carry an overloaded credit burden combined with past course failures.
