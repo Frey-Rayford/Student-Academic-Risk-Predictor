@@ -85,11 +85,32 @@ def explain_single_student(student_dict: dict, base_dir: str):
     values = shap_vals.values[0]
     feature_names = FEATURE_COLUMNS
     
+    feature_vn_names = {
+        "quiz_2": "Điểm kiểm tra Quiz 2",
+        "quiz_1": "Điểm kiểm tra Quiz 1",
+        "quiz_average": "Điểm Quiz trung bình",
+        "score_trend": "Xu hướng điểm kiểm tra",
+        "engagement_penalty": "Điểm phạt vắng & trễ hạn",
+        "absences": "Số buổi vắng học",
+        "late_submissions": "Số bài tập nộp trễ hạn",
+        "academic_burden": "Áp lực học vụ (tín chỉ + nợ môn)",
+        "study_hours_weekly": "Thời gian tự học hàng tuần",
+        "previous_gpa": "GPA các học kỳ trước",
+        "past_failures": "Số môn từng nợ quá khứ",
+        "credits_enrolled": "Số tín chỉ đang học",
+        "study_per_credit": "Giờ tự học trên mỗi tín chỉ",
+        "lms_access_frequency": "Tương tác hệ thống LMS",
+        "commute_minutes": "Thời gian đi lại tới trường",
+        "part_time_job": "Đi làm thêm ngoài giờ",
+        "lms_intensity": "Mức độ tương tác LMS"
+    }
+
     # Sap xep theo muc do day nguy co len cao (SHAP duong lon nhat)
     impact_list = []
     for f_name, f_val, s_val in zip(feature_names, df_feat.iloc[0], values):
         impact_list.append({
             "feature": f_name,
+            "feature_label": feature_vn_names.get(f_name, f_name),
             "value": float(np.round(f_val, 2)),
             "shap_value": float(np.round(s_val, 3))
         })

@@ -79,15 +79,15 @@ async def predict_risk(profile: StudentProfile):
     
     if prob_risk >= 0.70:
         risk_level = "HIGH_RISK"
-        risk_label = "Nguy Co Cao"
+        risk_label = "Nguy Cơ Cao"
         status_color = "#ef4444"
     elif prob_risk >= 0.35:
         risk_level = "MODERATE_RISK"
-        risk_label = "Canh Bao Nhe"
+        risk_label = "Cảnh Báo Nhẹ"
         status_color = "#f59e0b"
     else:
         risk_level = "SAFE"
-        risk_label = "An Toan"
+        risk_label = "An Toàn"
         status_color = "#10b981"
         
     # Giai thich SHAP
@@ -96,14 +96,16 @@ async def predict_risk(profile: StudentProfile):
     # De xuat khuyen nghi hoc vu
     recommendations = []
     if data_dict["absences"] >= 3:
-        recommendations.append("Diem danh: Da vang 3+ buoi, can han che toi da vang hoc de tranh bi cam thi.")
+        recommendations.append(f"Điểm danh: Đã vắng {data_dict['absences']} buổi, cần hạn chế tối đa vắng học để tránh bị cấm thi cuối kỳ.")
     if data_dict["quiz_2"] < data_dict["quiz_1"]:
         diff = round(data_dict["quiz_1"] - data_dict["quiz_2"], 1)
-        recommendations.append(f"Xu huong diem: Quiz 2 bi tut {diff} diem so voi Quiz 1. Can on tap phan kien thuc tuan 4-6.")
+        recommendations.append(f"Xu hướng điểm: Bài Quiz 2 bị tụt {diff} điểm so với Quiz 1. Cần rà soát và ôn tập lại phần kiến thức tuần 4 - 6.")
     if data_dict["study_hours_weekly"] < 8.0:
-        recommendations.append("Thoi gian tu hoc: Duoi 8 gio/tuan la qua it so voi so luong tin chi hien tai.")
+        recommendations.append(f"Thời gian tự học: Hiện tại chỉ đạt {data_dict['study_hours_weekly']} giờ/tuần, quá ít so với khối lượng {data_dict['credits_enrolled']} tín chỉ đang theo học.")
+    if data_dict["past_failures"] > 0:
+        recommendations.append(f"Lịch sử học vụ: Từng nợ {data_dict['past_failures']} môn trước đó, cần chủ động liên hệ giảng viên hoặc nhóm học tập để được trợ giúp sớm.")
     if not recommendations:
-        recommendations.append("Duy tri phong do hoc tap hien tai va tap trung on tap giai doan nuoc rut cuoi ky.")
+        recommendations.append("Duy trì phong độ học tập tích cực hiện tại và tập trung chuẩn bị tốt cho kỳ thi cuối kỳ.")
 
     return {
         "risk_probability": round(prob_risk * 100, 1),
@@ -125,7 +127,7 @@ async def predict_risk(profile: StudentProfile):
 async def get_sample_profiles():
     return {
         "safe": {
-            "label": "Sinh vien tieu bieu (An toan)",
+            "label": "Sinh viên gương mẫu (An toàn)",
             "data": {
                 "credits_enrolled": 16,
                 "past_failures": 0,
@@ -141,7 +143,7 @@ async def get_sample_profiles():
             }
         },
         "declining": {
-            "label": "Dau hieu sa sut giua ky (Canh bao)",
+            "label": "Dấu hiệu sa sút giữa kỳ (Cảnh báo)",
             "data": {
                 "credits_enrolled": 20,
                 "past_failures": 1,
@@ -157,7 +159,7 @@ async def get_sample_profiles():
             }
         },
         "critical": {
-            "label": "Nguy co rot mon cao (Khai khan)",
+            "label": "Nguy cơ rớt môn cao (Báo động)",
             "data": {
                 "credits_enrolled": 22,
                 "past_failures": 2,

@@ -1,9 +1,9 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Academic Risk Predictor - Early Warning & Explainable AI</title>
+  <title>Hệ Thống Cảnh Báo Sớm Nguy Cơ Rớt Môn - Explainable AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -112,31 +112,6 @@
       transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease;
     }
 
-    /* SHAP Diverging Bar */
-    .bar-container {
-      position: relative;
-      height: 12px;
-      background: #f1f5f9;
-      border-radius: 6px;
-      overflow: hidden;
-    }
-    .bar-fill-risk {
-      position: absolute;
-      left: 50%;
-      height: 100%;
-      background: linear-gradient(90deg, #f87171, #ef4444);
-      border-radius: 0 4px 4px 0;
-      transition: width 0.4s ease;
-    }
-    .bar-fill-protective {
-      position: absolute;
-      right: 50%;
-      height: 100%;
-      background: linear-gradient(270deg, #34d399, #10b981);
-      border-radius: 4px 0 0 4px;
-      transition: width 0.4s ease;
-    }
-
     .badge-chip {
       display: inline-flex;
       align-items: center;
@@ -145,7 +120,6 @@
       border-radius: 20px;
       font-size: 11.5px;
       font-weight: 700;
-      font-family: 'Geist Mono', monospace;
     }
 
     .pulse-dot {
@@ -168,27 +142,27 @@
       <div>
         <div class="flex items-center gap-2 mb-1">
           <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
-            Education Data Science Lab
+            Nghiên Cứu Khoa Học Dữ Liệu Giáo Dục
           </span>
           <span class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
-            <span class="pulse-dot bg-emerald-500"></span> Model Inference: Active
+            <span class="pulse-dot bg-emerald-500"></span> Mô hình Học máy: Sẵn sàng
           </span>
         </div>
         <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
-          Student Academic Risk Predictor
+          Hệ Thống Cảnh Báo Sớm Nguy Cơ Rớt Môn
         </h1>
         <p class="text-xs text-slate-500 mt-1">
-          He thong canh bao som nguy co rot mon giua ky (tuan 6 - 8) & giai thich nguyen nhan bang Explainable AI (SHAP)
+          Chẩn đoán sớm rủi ro học tập giai đoạn giữa kỳ (tuần 6 - 8) và bóc tách nguyên nhân cụ thể bằng Explainable AI (SHAP)
         </p>
       </div>
 
       <!-- Navigation Tabs -->
       <div class="mt-4 md:mt-0 flex items-center bg-slate-200/80 p-1 rounded-xl">
         <button id="tab-btn-diag" class="tab-btn active" onclick="switchTab('diag')">
-          Chan Doan Truc Tiep
+          Chẩn Đoán Trực Tiếp
         </button>
         <button id="tab-btn-analytics" class="tab-btn" onclick="switchTab('analytics')">
-          Bao Cao Bieu Do & SHAP
+          Báo Cáo Biểu Đồ & SHAP
         </button>
       </div>
     </header>
@@ -200,18 +174,18 @@
       <div class="card p-4 bg-gradient-to-r from-indigo-50/70 via-white to-blue-50/70 border-indigo-100">
         <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <div class="text-xs font-bold text-indigo-900 uppercase tracking-wider">Nap Nhanh Ho So Mau</div>
-            <div class="text-xs text-slate-600 mt-0.5">Thu nghiem nhanh cac kieu sinh vien dien hinh trong giang duong:</div>
+            <div class="text-xs font-bold text-indigo-900 uppercase tracking-wider">Nạp Nhanh Hồ Sơ Mẫu</div>
+            <div class="text-xs text-slate-600 mt-0.5">Thử nghiệm nhanh các trường hợp sinh viên điển hình trên giảng đường:</div>
           </div>
           <div class="flex flex-wrap gap-2">
             <button class="btn bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs shadow-sm" onclick="loadPreset('safe')">
-              Gương Mau (An toan)
+              Gương Mẫu (An Toàn)
             </button>
             <button class="btn bg-white hover:bg-amber-50 border border-amber-200 text-amber-700 text-xs shadow-sm" onclick="loadPreset('declining')">
-              Sa Sut Giua Ky (Canh bao)
+              Sa Sút Giữa Kỳ (Cảnh Báo)
             </button>
             <button class="btn bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs shadow-sm" onclick="loadPreset('critical')">
-              Bỏ Bê / Vắng Nhiều (Nguy co)
+              Bỏ Bê / Vắng Nhiều (Báo Động)
             </button>
           </div>
         </div>
@@ -224,27 +198,27 @@
         <div class="lg:col-span-7 card p-6">
           <div class="flex items-center justify-between pb-3 mb-5 border-b border-slate-100">
             <h2 class="text-sm font-bold text-slate-800">
-              Thong Tin Hoc Tap & Chuyen Can (Tuan 1 - 7)
+              Thông Tin Học Tập & Chuyên Cần (Tuần 1 - 7)
             </h2>
-            <span class="text-xs text-slate-400">11 dac trung dau vao</span>
+            <span class="text-xs text-slate-400">11 đặc trưng đầu vào</span>
           </div>
 
           <form id="risk-form" onsubmit="handlePredict(event)" class="space-y-4">
 
             <!-- Group 1: Academic History -->
             <div>
-              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nen Tang Hoc Vu Qua Khu</div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nền Tảng Học Vụ Quá Khứ</div>
               <div class="grid grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">GPA cac ky truoc</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Điểm GPA các kỳ trước</label>
                   <input type="number" id="previous_gpa" step="0.1" min="0" max="4" value="2.8" class="input-box mono">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">So mon tung no</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Số môn từng nợ</label>
                   <input type="number" id="past_failures" min="0" max="10" value="0" class="input-box mono">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Tin chi hoc ky nay</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Tín chỉ học kỳ này</label>
                   <input type="number" id="credits_enrolled" min="10" max="30" value="16" class="input-box mono">
                 </div>
               </div>
@@ -252,14 +226,14 @@
 
             <!-- Group 2: Early Progress Quizzes -->
             <div class="pt-2 border-t border-slate-100">
-              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Diem Kiem Tra Tien Trinh</div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Điểm Kiểm Tra Tiến Trình</div>
               <div class="grid grid-cols-2 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Quiz 1 (Tuan 3 - Thang 10)</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Bài Quiz 1 (Tuần 3 - Thang 10)</label>
                   <input type="number" id="quiz_1" step="0.1" min="0" max="10" value="7.0" class="input-box mono">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Quiz 2 (Tuan 6 - Thang 10)</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Bài Quiz 2 (Tuần 6 - Thang 10)</label>
                   <input type="number" id="quiz_2" step="0.1" min="0" max="10" value="6.5" class="input-box mono">
                 </div>
               </div>
@@ -267,18 +241,18 @@
 
             <!-- Group 3: Engagement & Attendance -->
             <div class="pt-2 border-t border-slate-100">
-              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Chuyen Can & Tuong Tac</div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Chuyên Cần & Tương Tác</div>
               <div class="grid grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">So buoi vang hoc</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Số buổi vắng học</label>
                   <input type="number" id="absences" min="0" max="15" value="1" class="input-box mono">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Nop bai muon</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Bài tập nộp muộn</label>
                   <input type="number" id="late_submissions" min="0" max="10" value="0" class="input-box mono">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Truy cap LMS/tuan</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Tương tác LMS/tuần</label>
                   <input type="number" id="lms_access_frequency" min="0" max="60" value="15" class="input-box mono">
                 </div>
               </div>
@@ -286,21 +260,21 @@
 
             <!-- Group 4: Life Context -->
             <div class="pt-2 border-t border-slate-100">
-              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Thoi Gian & Sinh Hoat</div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Thời Gian & Sinh Hoạt</div>
               <div class="grid grid-cols-3 gap-3">
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Gio tu hoc/tuan</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Giờ tự học mỗi tuần</label>
                   <input type="number" id="study_hours_weekly" step="0.5" min="0" max="50" value="12.0" class="input-box mono">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Di chuyen (phut)</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Thời gian đi lại (phút)</label>
                   <input type="number" id="commute_minutes" min="5" max="180" value="30" class="input-box mono">
                 </div>
                 <div>
-                  <label class="block text-xs font-medium text-slate-700 mb-1">Lam them (Part-time)</label>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Đi làm thêm ngoài giờ</label>
                   <select id="part_time_job" class="input-box mono">
-                    <option value="0">Khong</option>
-                    <option value="1">Co di lam</option>
+                    <option value="0">Không đi làm</option>
+                    <option value="1">Có đi làm thêm</option>
                   </select>
                 </div>
               </div>
@@ -308,7 +282,7 @@
 
             <div class="pt-3">
               <button type="submit" id="submit-btn" class="btn btn-primary w-full py-3 text-sm font-semibold">
-                Chay Chan Doan Nguy Co Hoc Vu
+                Chạy Chẩn Đoán Nguy Cơ Học Vụ
               </button>
             </div>
           </form>
@@ -320,9 +294,9 @@
           <!-- Risk Score Card with Circular Gauge -->
           <div class="card p-6">
             <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
-              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Danh Gia Tong Quan</span>
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Đánh Giá Tổng Quan</span>
               <span id="risk-badge" class="badge-chip bg-emerald-50 text-emerald-700 border border-emerald-200">
-                An Toan
+                An Toàn
               </span>
             </div>
 
@@ -337,37 +311,37 @@
                 </svg>
                 <div class="absolute inset-0 flex flex-col items-center justify-center">
                   <span id="risk-prob" class="text-2xl font-black text-slate-900 mono leading-none">14.2%</span>
-                  <span class="text-[10px] text-slate-400 font-medium mt-1">Xac suat</span>
+                  <span class="text-[10px] text-slate-400 font-medium mt-1">Xác suất rớt</span>
                 </div>
               </div>
 
               <!-- Key Indicators Pill -->
               <div class="flex-1 space-y-2.5">
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-500">Xu huong diem:</span>
+                  <span class="text-slate-500">Xu hướng điểm:</span>
                   <span id="metric-trend" class="mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">+0.5</span>
                 </div>
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-500">Diem Quiz TB:</span>
+                  <span class="text-slate-500">Điểm Quiz trung bình:</span>
                   <span id="metric-avg" class="mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">6.8 / 10</span>
                 </div>
                 <div class="flex justify-between items-center text-xs">
-                  <span class="text-slate-500">Tu hoc / Tin chi:</span>
+                  <span class="text-slate-500">Tự học / Tín chỉ:</span>
                   <span id="metric-ratio" class="mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">0.75h/tc</span>
                 </div>
               </div>
             </div>
 
             <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>Nguong canh bao toi uu: 75.0%</span>
-              <span class="mono">ROC-AUC: 0.981</span>
+              <span>Ngưỡng cảnh báo tối ưu: 75.0%</span>
+              <span class="mono">Độ phân tách ROC-AUC: 0.981</span>
             </div>
           </div>
 
           <!-- SHAP Attribution Breakdown -->
           <div class="card p-6">
             <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
-              Boc Tach Nguyen Nhan (SHAP Attribution)
+              Bóc Tách Nguyên Nhân (SHAP Attribution)
             </h3>
 
             <!-- Diverging visual bars -->
@@ -375,9 +349,9 @@
               <div>
                 <div class="flex items-center justify-between text-xs mb-1.5">
                   <span class="font-semibold text-rose-700 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Yeu to lam tang nguy co:
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Yếu tố làm tăng nguy cơ rủi ro:
                   </span>
-                  <span class="text-[11px] text-slate-400 mono">SHAP Value (+)</span>
+                  <span class="text-[11px] text-slate-400 mono">Tác động SHAP (+)</span>
                 </div>
                 <div id="risk-drivers-container" class="space-y-2">
                   <!-- Injected via JS -->
@@ -387,9 +361,9 @@
               <div class="pt-2 border-t border-slate-100">
                 <div class="flex items-center justify-between text-xs mb-1.5">
                   <span class="font-semibold text-emerald-700 flex items-center gap-1">
-                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Yeu to giup giam thieu rui ro:
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Yếu tố tích cực giúp bảo vệ:
                   </span>
-                  <span class="text-[11px] text-slate-400 mono">SHAP Value (-)</span>
+                  <span class="text-[11px] text-slate-400 mono">Tác động SHAP (-)</span>
                 </div>
                 <div id="protective-factors-container" class="space-y-2">
                   <!-- Injected via JS -->
@@ -401,7 +375,7 @@
           <!-- Actionable Recommendations Card -->
           <div class="card p-6 bg-gradient-to-br from-white to-indigo-50/40 border-indigo-100">
             <h3 class="text-xs font-bold text-indigo-950 uppercase tracking-wider mb-3">
-              Khuyen Nghi Can Thiep Som
+              Khuyến Nghị Can Thiệp Sớm
             </h3>
             <ul id="recommendations-list" class="space-y-2 text-xs text-slate-700">
               <!-- Injected via JS -->
@@ -416,39 +390,39 @@
     <div id="view-analytics" class="hidden space-y-6">
 
       <div class="card p-5 bg-white">
-        <h2 class="text-base font-bold text-slate-900 mb-1">Ket Qua Thuc Nghiem & Minh Chung So Lieu</h2>
+        <h2 class="text-base font-bold text-slate-900 mb-1">Kết Quả Thực Nghiệm & Minh Chứng Dữ Liệu</h2>
         <p class="text-xs text-slate-500">
-          Toan bo cac bieu do duoi day duoc sinh tu dong boi script danh gia Machine Learning (`src/evaluate.py` va `src/explain.py`) tren tap test doc lap.
+          Toàn bộ các biểu đồ dưới đây được sinh tự động bởi pipeline Machine Learning (`src/evaluate.py` và `src/explain.py`) trên tập kiểm thử độc lập gồm 240 sinh viên.
         </p>
       </div>
 
       <!-- Figure Grid 1: Model Comparison & ROC-PR -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="card p-5">
-          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">1. So Sanh 3 Thuat Toan Phan Loai</h3>
-          <p class="text-xs text-slate-500 mb-3">Doi chieu Accuracy, Precision, Recall, F1 va ROC-AUC tren tap kiem thu.</p>
-          <img src="/figures/model_comparison.png" alt="Model Comparison" class="w-full rounded-lg border border-slate-100">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">1. So Sánh 3 Thuật Toán Phân Loại</h3>
+          <p class="text-xs text-slate-500 mb-3">Đối chiếu Accuracy, Precision, Recall, F1 và ROC-AUC giữa Logistic Regression, Random Forest và LightGBM.</p>
+          <img src="/figures/model_comparison.png" alt="So sánh mô hình" class="w-full rounded-lg border border-slate-100">
         </div>
 
         <div class="card p-5">
-          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">2. Duong Cong ROC & Precision-Recall</h3>
-          <p class="text-xs text-slate-500 mb-3">Ca 3 mo hinh deu dat AUC vuot troi (> 0.96) nho dac trung duoc thiet ke chat che.</p>
-          <img src="/figures/roc_pr_curves.png" alt="ROC & PR Curves" class="w-full rounded-lg border border-slate-100">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">2. Đường Cong ROC & Precision-Recall</h3>
+          <p class="text-xs text-slate-500 mb-3">Cả 3 mô hình đều đạt AUC vượt trội (> 0.96) nhờ các đặc trưng được thiết kế chặt chẽ theo nghiệp vụ học vụ.</p>
+          <img src="/figures/roc_pr_curves.png" alt="Đường cong ROC và PR" class="w-full rounded-lg border border-slate-100">
         </div>
       </div>
 
       <!-- Figure Grid 2: Confusion Matrix & SHAP Summary -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="card p-5">
-          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">3. Toi Uu Nguong Cat (Threshold Tuning)</h3>
-          <p class="text-xs text-slate-500 mb-3">Ma tran loi truoc (0.50) va sau tinh chinh (0.75) de uu tien bao phu Recall >= 87%.</p>
-          <img src="/figures/confusion_matrices.png" alt="Confusion Matrices" class="w-full rounded-lg border border-slate-100">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">3. Tối Ưu Ngưỡng Cắt (Threshold Tuning)</h3>
+          <p class="text-xs text-slate-500 mb-3">Ma trận lỗi trước (ngưỡng 0.50) và sau khi tinh chỉnh (ngưỡng 0.75) nhằm ưu tiên độ bao phủ Recall >= 87% để không bỏ sót sinh viên.</p>
+          <img src="/figures/confusion_matrices.png" alt="Ma trận lỗi" class="w-full rounded-lg border border-slate-100">
         </div>
 
         <div class="card p-5">
-          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">4. SHAP Feature Attribution Summary</h3>
-          <p class="text-xs text-slate-500 mb-3">Biểu đồ beeswarm bóc tách các đặc trưng tác động mạnh nhất tới việc rớt môn.</p>
-          <img src="/figures/shap_summary.png" alt="SHAP Summary" class="w-full rounded-lg border border-slate-100">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">4. Bóc Tách Tầm Quan Trọng SHAP (Global Attribution)</h3>
+          <p class="text-xs text-slate-500 mb-3">Biểu đồ beeswarm bóc tách các đặc trưng tác động mạnh nhất: Điểm kiểm tra Quiz 2 và mức phạt vắng học là 2 chỉ báo hàng đầu.</p>
+          <img src="/figures/shap_summary.png" alt="Tổng quan SHAP" class="w-full rounded-lg border border-slate-100">
         </div>
       </div>
 
@@ -473,7 +447,7 @@
         const res = await fetch('/api/sample-profiles');
         presets = await res.json();
       } catch (err) {
-        console.error("Loi khi tai mau du lieu:", err);
+        console.error("Lỗi khi tải mẫu dữ liệu:", err);
       }
     }
 
@@ -490,7 +464,7 @@
     async function handlePredict(e) {
       if (e) e.preventDefault();
       const btn = document.getElementById('submit-btn');
-      btn.innerText = "Dang tinh toan...";
+      btn.innerText = "Đang phân tích dữ liệu...";
       btn.disabled = true;
 
       const payload = {
@@ -516,9 +490,9 @@
         const result = await res.json();
         updateUI(result);
       } catch (err) {
-        console.error("Loi khi goi API:", err);
+        console.error("Lỗi khi gọi API dự đoán:", err);
       } finally {
-        btn.innerText = "Chay Chan Doan Nguy Co Hoc Vu";
+        btn.innerText = "Chạy Chẩn Đoán Nguy Cơ Học Vụ";
         btn.disabled = false;
       }
     }
@@ -563,15 +537,16 @@
       const riskContainer = document.getElementById('risk-drivers-container');
       riskContainer.innerHTML = '';
       if (res.shap_explanation.top_risk_drivers.length === 0) {
-        riskContainer.innerHTML = '<div class="text-xs text-slate-400 py-1">Khong co yeu to rui ro dang ke</div>';
+        riskContainer.innerHTML = '<div class="text-xs text-slate-400 py-1">Không ghi nhận yếu tố rủi ro đáng kể</div>';
       } else {
         res.shap_explanation.top_risk_drivers.forEach(d => {
           const pct = Math.min(100, Math.max(15, (d.shap_value / 3.0) * 100));
+          const label = d.feature_label || d.feature;
           const el = document.createElement('div');
           el.className = 'text-xs';
           el.innerHTML = `
             <div class="flex justify-between items-center mb-1">
-              <span class="text-slate-700 font-medium">${d.feature} <span class="text-slate-400 font-normal">(${d.value})</span></span>
+              <span class="text-slate-700 font-medium">${label} <span class="text-slate-400 font-normal">(${d.value})</span></span>
               <span class="text-rose-600 font-bold mono">+${d.shap_value.toFixed(2)}</span>
             </div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
@@ -586,15 +561,16 @@
       const protContainer = document.getElementById('protective-factors-container');
       protContainer.innerHTML = '';
       if (res.shap_explanation.top_protective.length === 0) {
-        protContainer.innerHTML = '<div class="text-xs text-slate-400 py-1">Chua co yeu to bao ve manh</div>';
+        protContainer.innerHTML = '<div class="text-xs text-slate-400 py-1">Chưa có yếu tố bảo vệ mạnh</div>';
       } else {
         res.shap_explanation.top_protective.forEach(p => {
           const pct = Math.min(100, Math.max(15, (Math.abs(p.shap_value) / 3.0) * 100));
+          const label = p.feature_label || p.feature;
           const el = document.createElement('div');
           el.className = 'text-xs';
           el.innerHTML = `
             <div class="flex justify-between items-center mb-1">
-              <span class="text-slate-700 font-medium">${p.feature} <span class="text-slate-400 font-normal">(${p.value})</span></span>
+              <span class="text-slate-700 font-medium">${label} <span class="text-slate-400 font-normal">(${p.value})</span></span>
               <span class="text-emerald-600 font-bold mono">${p.shap_value.toFixed(2)}</span>
             </div>
             <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
