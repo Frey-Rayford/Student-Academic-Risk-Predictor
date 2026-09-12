@@ -1,0 +1,17 @@
+﻿# Virtual Environment
+.venv/
+venv/
+env/
+
+# Python cache
+__pycache__/
+*.py[cod]
+*$py.class
+
+# Private notes
+MY_CV_NOTES.md
+
+# Editor & OS
+.vscode/
+.idea/
+*.log

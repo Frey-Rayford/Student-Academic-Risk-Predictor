@@ -1,0 +1,392 @@
+﻿<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Academic Risk Predictor</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #09090b;
+      --surface: #121215;
+      --surface-2: #18181c;
+      --border: #27272a;
+      --border-light: #3f3f46;
+      --text: #f4f4f5;
+      --text-muted: #a1a1aa;
+      --text-dim: #71717a;
+      --accent: #3b82f6;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+    }
+    * { box-sizing: border-box; }
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'Inter', sans-serif;
+      font-size: 13px;
+      line-height: 1.5;
+    }
+    .mono { font-family: 'Geist Mono', monospace; }
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+    }
+    .input-field {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text);
+      border-radius: 6px;
+      padding: 6px 10px;
+      font-size: 12.5px;
+      width: 100%;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    .input-field:focus {
+      border-color: var(--accent);
+    }
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 500;
+      border-radius: 6px;
+      padding: 6px 12px;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    .btn-primary {
+      background: var(--accent);
+      color: #fff;
+    }
+    .btn-primary:hover {
+      background: #2563eb;
+    }
+    .btn-secondary {
+      background: var(--surface-2);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+    }
+    .btn-secondary:hover {
+      color: var(--text);
+      border-color: var(--border-light);
+    }
+    .badge {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 4px;
+      font-size: 11px;
+      font-family: 'Geist Mono', monospace;
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body class="min-h-screen p-6">
+  <div class="max-w-6xl mx-auto">
+    <!-- Top Header -->
+    <header class="flex items-center justify-between border-b border-[#27272a] pb-4 mb-6">
+      <div>
+        <h1 class="text-base font-bold tracking-tight">Student Academic Risk Predictor</h1>
+        <p class="text-xs text-[#a1a1aa] mt-0.5">Early Warning & Explainable AI Lab (Week 6-8 Midterm Intervention)</p>
+      </div>
+      <div class="flex items-center gap-2">
+        <span class="text-xs text-[#71717a] mono">Model: Logistic Regression + SHAP</span>
+        <span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+      </div>
+    </header>
+
+    <!-- Preset Profile Quick Select -->
+    <div class="card p-3 mb-6 flex items-center justify-between">
+      <span class="text-xs text-[#a1a1aa] font-medium">Nap nhanh ho so mau de kiem thu:</span>
+      <div class="flex gap-2">
+        <button class="btn btn-secondary text-xs" onclick="loadPreset('safe')">Mau 1: An toan</button>
+        <button class="btn btn-secondary text-xs" onclick="loadPreset('declining')">Mau 2: Sa sut giua ky</button>
+        <button class="btn btn-secondary text-xs" onclick="loadPreset('critical')">Mau 3: Nguy co cao</button>
+      </div>
+    </div>
+
+    <!-- Main Grid -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+      <!-- Left Column: Input Features Form -->
+      <div class="lg:col-span-7 card p-5">
+        <h2 class="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider mb-4">Thong Tin Hoc Tap & Hanh Vi (Tuan 1 - 7)</h2>
+
+        <form id="risk-form" onsubmit="handlePredict(event)" class="space-y-4">
+          <!-- Row 1: Academic History -->
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">GPA cac ky truoc</label>
+              <input type="number" id="previous_gpa" step="0.1" min="0" max="4" value="2.8" class="input-field mono">
+            </div>
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">So mon tung no</label>
+              <input type="number" id="past_failures" min="0" max="10" value="0" class="input-field mono">
+            </div>
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Tin chi hoc ky nay</label>
+              <input type="number" id="credits_enrolled" min="10" max="30" value="16" class="input-field mono">
+            </div>
+          </div>
+
+          <!-- Row 2: Early Progress Quizzes -->
+          <div class="grid grid-cols-2 gap-3">
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Diem Quiz 1 (Thang 10)</label>
+              <input type="number" id="quiz_1" step="0.1" min="0" max="10" value="7.0" class="input-field mono">
+            </div>
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Diem Quiz 2 (Thang 10)</label>
+              <input type="number" id="quiz_2" step="0.1" min="0" max="10" value="6.5" class="input-field mono">
+            </div>
+          </div>
+
+          <!-- Row 3: Engagement & Attendance -->
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">So buoi vang hoc</label>
+              <input type="number" id="absences" min="0" max="15" value="1" class="input-field mono">
+            </div>
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Bai tap nop tre han</label>
+              <input type="number" id="late_submissions" min="0" max="10" value="0" class="input-field mono">
+            </div>
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Tuong tac LMS/tuan</label>
+              <input type="number" id="lms_access_frequency" min="0" max="60" value="15" class="input-field mono">
+            </div>
+          </div>
+
+          <!-- Row 4: Study Habits & Routine -->
+          <div class="grid grid-cols-3 gap-3">
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Gio tu hoc/tuan</label>
+              <input type="number" id="study_hours_weekly" step="0.5" min="0" max="50" value="12.0" class="input-field mono">
+            </div>
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Thoi gian di chuyen (phut)</label>
+              <input type="number" id="commute_minutes" min="5" max="180" value="30" class="input-field mono">
+            </div>
+            <div>
+              <label class="block text-xs text-[#a1a1aa] mb-1">Lam them (Part-time)</label>
+              <select id="part_time_job" class="input-field mono">
+                <option value="0">Khong</option>
+                <option value="1">Co</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="pt-2">
+            <button type="submit" id="submit-btn" class="btn btn-primary w-full py-2.5 text-xs font-semibold">
+              Chay Chan Doan Nguy Co Hoc Vu
+            </button>
+          </div>
+        </form>
+      </div>
+
+      <!-- Right Column: Results & Explainable AI Card -->
+      <div class="lg:col-span-5 space-y-4">
+        <!-- Probability Card -->
+        <div class="card p-5">
+          <div class="flex items-center justify-between mb-3">
+            <span class="text-xs text-[#a1a1aa] uppercase font-semibold tracking-wider">Ket Qua Du Doan</span>
+            <span id="risk-badge" class="badge bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/30">An Toan</span>
+          </div>
+
+          <div class="flex items-baseline gap-2 mb-2">
+            <span id="risk-prob" class="text-3xl font-bold mono">14.2%</span>
+            <span class="text-xs text-[#71717a]">xac suat rot mon</span>
+          </div>
+
+          <!-- Progress Bar -->
+          <div class="w-full bg-[#18181c] h-2 rounded-full overflow-hidden mb-4 border border-[#27272a]">
+            <div id="risk-progress" class="bg-[#10b981] h-full transition-all duration-300" style="width: 14.2%"></div>
+          </div>
+
+          <!-- Derived Metrics Summary -->
+          <div class="grid grid-cols-3 gap-2 border-t border-[#27272a] pt-3 text-center">
+            <div>
+              <div class="text-[10px] text-[#71717a]">Xu huong diem</div>
+              <div id="metric-trend" class="mono text-xs font-semibold mt-0.5">-0.5</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-[#71717a]">Diem Quiz TB</div>
+              <div id="metric-avg" class="mono text-xs font-semibold mt-0.5">6.8</div>
+            </div>
+            <div>
+              <div class="text-[10px] text-[#71717a]">Tu hoc/Tin chi</div>
+              <div id="metric-ratio" class="mono text-xs font-semibold mt-0.5">0.75h</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Explainable AI (SHAP Attribution) -->
+        <div class="card p-5">
+          <h3 class="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider mb-3">Boc Tach Nguyen Nhan (SHAP Attribution)</h3>
+          
+          <div class="space-y-3">
+            <div>
+              <div class="text-[11px] text-[#ef4444] font-medium mb-1.5">Top yeu to day nguy co len cao:</div>
+              <ul id="risk-drivers" class="space-y-1 text-xs mono text-[#f4f4f5]">
+                <li class="flex justify-between text-[#a1a1aa] py-0.5 border-b border-[#27272a]">
+                  <span>Vang hoc (absences = 1)</span>
+                  <span class="text-[#ef4444]">+0.14</span>
+                </li>
+              </ul>
+            </div>
+
+            <div>
+              <div class="text-[11px] text-[#10b981] font-medium mb-1.5">Yeu to giup giam thieu rui ro:</div>
+              <ul id="protective-factors" class="space-y-1 text-xs mono text-[#f4f4f5]">
+                <li class="flex justify-between text-[#a1a1aa] py-0.5 border-b border-[#27272a]">
+                  <span>GPA ky truoc (gpa = 2.8)</span>
+                  <span class="text-[#10b981]">-0.32</span>
+                </li>
+              </ul>
+            </div>
+          </div>
+        </div>
+
+        <!-- Recommendations Card -->
+        <div class="card p-5">
+          <h3 class="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider mb-2">Khuyen Nghi Can Thiep Som</h3>
+          <ul id="recommendations-list" class="space-y-1.5 text-xs text-[#a1a1aa]">
+            <li class="flex items-start gap-1.5">
+              <span class="text-[#3b82f6]">•</span>
+              <span>Duy tri phong do hoc tap hien tai va tap trung on tap giai doan nuoc rut cuoi ky.</span>
+            </li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let presets = {};
+
+    // Load initial presets
+    async function initPresets() {
+      try {
+        const res = await fetch('/api/sample-profiles');
+        presets = await res.json();
+      } catch (err) {
+        console.error("Loi khi tai mau du lieu:", err);
+      }
+    }
+
+    function loadPreset(key) {
+      if (!presets[key]) return;
+      const data = presets[key].data;
+      for (const [k, v] of Object.entries(data)) {
+        const el = document.getElementById(k);
+        if (el) el.value = v;
+      }
+      document.getElementById('risk-form').dispatchEvent(new Event('submit'));
+    }
+
+    async function handlePredict(e) {
+      if (e) e.preventDefault();
+      const btn = document.getElementById('submit-btn');
+      btn.innerText = "Dang tinh toan...";
+      btn.disabled = true;
+
+      const payload = {
+        credits_enrolled: parseInt(document.getElementById('credits_enrolled').value),
+        past_failures: parseInt(document.getElementById('past_failures').value),
+        previous_gpa: parseFloat(document.getElementById('previous_gpa').value),
+        study_hours_weekly: parseFloat(document.getElementById('study_hours_weekly').value),
+        commute_minutes: parseInt(document.getElementById('commute_minutes').value),
+        part_time_job: parseInt(document.getElementById('part_time_job').value),
+        absences: parseInt(document.getElementById('absences').value),
+        late_submissions: parseInt(document.getElementById('late_submissions').value),
+        lms_access_frequency: parseInt(document.getElementById('lms_access_frequency').value),
+        quiz_1: parseFloat(document.getElementById('quiz_1').value),
+        quiz_2: parseFloat(document.getElementById('quiz_2').value)
+      };
+
+      try {
+        const res = await fetch('/api/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        const result = await res.json();
+        updateUI(result);
+      } catch (err) {
+        console.error("Loi khi goi API:", err);
+      } finally {
+        btn.innerText = "Chay Chan Doan Nguy Co Hoc Vu";
+        btn.disabled = false;
+      }
+    }
+
+    function updateUI(res) {
+      // Risk probability & badge
+      document.getElementById('risk-prob').innerText = res.risk_probability + '%';
+      const badge = document.getElementById('risk-badge');
+      badge.innerText = res.risk_label;
+      badge.style.backgroundColor = res.status_color + '25';
+      badge.style.color = res.status_color;
+      badge.style.borderColor = res.status_color + '40';
+
+      const prog = document.getElementById('risk-progress');
+      prog.style.width = Math.min(100, Math.max(0, res.risk_probability)) + '%';
+      prog.style.backgroundColor = res.status_color;
+
+      // Derived metrics
+      const trend = res.features_derived.score_trend;
+      const trendEl = document.getElementById('metric-trend');
+      trendEl.innerText = (trend > 0 ? '+' : '') + trend;
+      trendEl.style.color = trend < 0 ? '#ef4444' : '#10b981';
+
+      document.getElementById('metric-avg').innerText = res.features_derived.quiz_average;
+      document.getElementById('metric-ratio').innerText = res.features_derived.study_per_credit + 'h';
+
+      // SHAP drivers
+      const driversEl = document.getElementById('risk-drivers');
+      driversEl.innerHTML = '';
+      if (res.shap_explanation.top_risk_drivers.length === 0) {
+        driversEl.innerHTML = '<li class="text-[#71717a]">Khong ghi nhan yeu to rui ro dang ke</li>';
+      } else {
+        res.shap_explanation.top_risk_drivers.forEach(d => {
+          const li = document.createElement('li');
+          li.className = 'flex justify-between py-0.5 border-b border-[#27272a]';
+          li.innerHTML = `<span>${d.feature} (${d.value})</span><span class="text-[#ef4444]">+${d.shap_value}</span>`;
+          driversEl.appendChild(li);
+        });
+      }
+
+      // Protective factors
+      const protEl = document.getElementById('protective-factors');
+      protEl.innerHTML = '';
+      if (res.shap_explanation.top_protective.length === 0) {
+        protEl.innerHTML = '<li class="text-[#71717a]">Chua co yeu to bao ve manh</li>';
+      } else {
+        res.shap_explanation.top_protective.forEach(p => {
+          const li = document.createElement('li');
+          li.className = 'flex justify-between py-0.5 border-b border-[#27272a]';
+          li.innerHTML = `<span>${p.feature} (${p.value})</span><span class="text-[#10b981]">${p.shap_value}</span>`;
+          protEl.appendChild(li);
+        });
+      }
+
+      // Recommendations
+      const recsEl = document.getElementById('recommendations-list');
+      recsEl.innerHTML = '';
+      res.recommendations.forEach(r => {
+        const li = document.createElement('li');
+        li.className = 'flex items-start gap-1.5';
+        li.innerHTML = `<span class="text-[#3b82f6]">•</span><span>${r}</span>`;
+        recsEl.appendChild(li);
+      });
+    }
+
+    initPresets();
+  </script>
+</body>
+</html>
