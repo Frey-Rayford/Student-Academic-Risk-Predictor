@@ -3,273 +3,471 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Student Academic Risk Predictor</title>
+  <title>Student Academic Risk Predictor - Early Warning & Explainable AI</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Geist+Mono:wght@400;500;600;700&family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
   <style>
     :root {
-      --bg: #09090b;
-      --surface: #121215;
-      --surface-2: #18181c;
-      --border: #27272a;
-      --border-light: #3f3f46;
-      --text: #f4f4f5;
-      --text-muted: #a1a1aa;
-      --text-dim: #71717a;
-      --accent: #3b82f6;
-      --green: #10b981;
-      --amber: #f59e0b;
-      --red: #ef4444;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --border-focus: #4f46e5;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --text-dim: #94a3b8;
+      --primary: #4f46e5;
+      --primary-light: #eef2ff;
+      --emerald: #059669;
+      --emerald-bg: #ecfdf5;
+      --amber: #d97706;
+      --amber-bg: #fffbeb;
+      --rose: #e11d48;
+      --rose-bg: #fff1f2;
     }
+
     * { box-sizing: border-box; }
+
     body {
-      background: var(--bg);
-      color: var(--text);
+      background-color: var(--bg);
+      background-image: 
+        radial-gradient(#e2e8f0 1px, transparent 1px),
+        radial-gradient(#e2e8f0 1px, #f8fafc 1px);
+      background-size: 24px 24px;
+      background-position: 0 0, 12px 12px;
+      color: var(--text-main);
       font-family: 'Inter', sans-serif;
-      font-size: 13px;
+      font-size: 13.5px;
       line-height: 1.5;
     }
+
     .mono { font-family: 'Geist Mono', monospace; }
+
     .card {
-      background: var(--surface);
+      background: var(--card-bg);
       border: 1px solid var(--border);
-      border-radius: 8px;
+      border-radius: 12px;
+      box-shadow: 0 4px 20px -2px rgba(15, 23, 42, 0.05);
+      transition: all 0.2s ease;
     }
-    .input-field {
-      background: var(--surface-2);
+
+    .input-box {
+      background: #ffffff;
       border: 1px solid var(--border);
-      color: var(--text);
-      border-radius: 6px;
-      padding: 6px 10px;
-      font-size: 12.5px;
+      color: var(--text-main);
+      border-radius: 8px;
+      padding: 7px 11px;
+      font-size: 13px;
       width: 100%;
       outline: none;
-      transition: border-color 0.15s;
+      transition: all 0.15s;
     }
-    .input-field:focus {
-      border-color: var(--accent);
+    .input-box:focus {
+      border-color: var(--primary);
+      box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
     }
+
     .btn {
       display: inline-flex;
       align-items: center;
       justify-content: center;
-      font-weight: 500;
-      border-radius: 6px;
-      padding: 6px 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      padding: 7px 14px;
       cursor: pointer;
       transition: all 0.15s;
+      user-select: none;
     }
+    .btn:active { transform: translateY(1px); }
+
     .btn-primary {
-      background: var(--accent);
-      color: #fff;
+      background: linear-gradient(135deg, #4f46e5 0%, #3b82f6 100%);
+      color: #ffffff;
+      box-shadow: 0 2px 10px rgba(79, 70, 229, 0.25);
     }
     .btn-primary:hover {
-      background: #2563eb;
+      filter: brightness(1.06);
     }
-    .btn-secondary {
-      background: var(--surface-2);
-      border: 1px solid var(--border);
-      color: var(--text-muted);
-    }
-    .btn-secondary:hover {
-      color: var(--text);
-      border-color: var(--border-light);
-    }
-    .badge {
-      display: inline-block;
-      padding: 2px 8px;
-      border-radius: 4px;
-      font-size: 11px;
-      font-family: 'Geist Mono', monospace;
+
+    .tab-btn {
+      padding: 8px 16px;
+      border-radius: 8px;
       font-weight: 600;
+      font-size: 13px;
+      cursor: pointer;
+      color: var(--text-muted);
+      transition: all 0.15s;
+    }
+    .tab-btn.active {
+      background: #ffffff;
+      color: var(--primary);
+      box-shadow: 0 2px 8px rgba(15, 23, 42, 0.08);
+    }
+
+    /* Gauge Circle */
+    .gauge-svg { transform: rotate(-90deg); }
+    .gauge-bg { stroke: #e2e8f0; }
+    .gauge-fill {
+      transition: stroke-dashoffset 0.6s cubic-bezier(0.16, 1, 0.3, 1), stroke 0.4s ease;
+    }
+
+    /* SHAP Diverging Bar */
+    .bar-container {
+      position: relative;
+      height: 12px;
+      background: #f1f5f9;
+      border-radius: 6px;
+      overflow: hidden;
+    }
+    .bar-fill-risk {
+      position: absolute;
+      left: 50%;
+      height: 100%;
+      background: linear-gradient(90deg, #f87171, #ef4444);
+      border-radius: 0 4px 4px 0;
+      transition: width 0.4s ease;
+    }
+    .bar-fill-protective {
+      position: absolute;
+      right: 50%;
+      height: 100%;
+      background: linear-gradient(270deg, #34d399, #10b981);
+      border-radius: 4px 0 0 4px;
+      transition: width 0.4s ease;
+    }
+
+    .badge-chip {
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11.5px;
+      font-weight: 700;
+      font-family: 'Geist Mono', monospace;
+    }
+
+    .pulse-dot {
+      width: 7px;
+      height: 7px;
+      border-radius: 50%;
+      animation: pulse 2s infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.4; transform: scale(0.85); }
     }
   </style>
 </head>
-<body class="min-h-screen p-6">
+<body class="min-h-screen py-8 px-4 sm:px-6 lg:px-8">
   <div class="max-w-6xl mx-auto">
-    <!-- Top Header -->
-    <header class="flex items-center justify-between border-b border-[#27272a] pb-4 mb-6">
+
+    <!-- Top Banner & Brand -->
+    <header class="flex flex-col md:flex-row md:items-center md:justify-between pb-6 mb-6 border-b border-[#e2e8f0]">
       <div>
-        <h1 class="text-base font-bold tracking-tight">Student Academic Risk Predictor</h1>
-        <p class="text-xs text-[#a1a1aa] mt-0.5">Early Warning & Explainable AI Lab (Week 6-8 Midterm Intervention)</p>
+        <div class="flex items-center gap-2 mb-1">
+          <span class="px-2.5 py-0.5 rounded-full text-[11px] font-bold uppercase tracking-wider bg-indigo-50 text-indigo-700 border border-indigo-200">
+            Education Data Science Lab
+          </span>
+          <span class="flex items-center gap-1.5 text-xs text-slate-500 font-medium">
+            <span class="pulse-dot bg-emerald-500"></span> Model Inference: Active
+          </span>
+        </div>
+        <h1 class="text-2xl font-extrabold text-slate-900 tracking-tight">
+          Student Academic Risk Predictor
+        </h1>
+        <p class="text-xs text-slate-500 mt-1">
+          He thong canh bao som nguy co rot mon giua ky (tuan 6 - 8) & giai thich nguyen nhan bang Explainable AI (SHAP)
+        </p>
       </div>
-      <div class="flex items-center gap-2">
-        <span class="text-xs text-[#71717a] mono">Model: Logistic Regression + SHAP</span>
-        <span class="w-2 h-2 rounded-full bg-[#10b981]"></span>
+
+      <!-- Navigation Tabs -->
+      <div class="mt-4 md:mt-0 flex items-center bg-slate-200/80 p-1 rounded-xl">
+        <button id="tab-btn-diag" class="tab-btn active" onclick="switchTab('diag')">
+          Chan Doan Truc Tiep
+        </button>
+        <button id="tab-btn-analytics" class="tab-btn" onclick="switchTab('analytics')">
+          Bao Cao Bieu Do & SHAP
+        </button>
       </div>
     </header>
 
-    <!-- Preset Profile Quick Select -->
-    <div class="card p-3 mb-6 flex items-center justify-between">
-      <span class="text-xs text-[#a1a1aa] font-medium">Nap nhanh ho so mau de kiem thu:</span>
-      <div class="flex gap-2">
-        <button class="btn btn-secondary text-xs" onclick="loadPreset('safe')">Mau 1: An toan</button>
-        <button class="btn btn-secondary text-xs" onclick="loadPreset('declining')">Mau 2: Sa sut giua ky</button>
-        <button class="btn btn-secondary text-xs" onclick="loadPreset('critical')">Mau 3: Nguy co cao</button>
-      </div>
-    </div>
+    <!-- ══════════════ TAB 1: DIAGNOSTIC PREDICTOR ══════════════ -->
+    <div id="view-diag" class="space-y-6">
 
-    <!-- Main Grid -->
-    <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
-      <!-- Left Column: Input Features Form -->
-      <div class="lg:col-span-7 card p-5">
-        <h2 class="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider mb-4">Thong Tin Hoc Tap & Hanh Vi (Tuan 1 - 7)</h2>
-
-        <form id="risk-form" onsubmit="handlePredict(event)" class="space-y-4">
-          <!-- Row 1: Academic History -->
-          <div class="grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">GPA cac ky truoc</label>
-              <input type="number" id="previous_gpa" step="0.1" min="0" max="4" value="2.8" class="input-field mono">
-            </div>
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">So mon tung no</label>
-              <input type="number" id="past_failures" min="0" max="10" value="0" class="input-field mono">
-            </div>
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Tin chi hoc ky nay</label>
-              <input type="number" id="credits_enrolled" min="10" max="30" value="16" class="input-field mono">
-            </div>
+      <!-- Preset Profiles Banner -->
+      <div class="card p-4 bg-gradient-to-r from-indigo-50/70 via-white to-blue-50/70 border-indigo-100">
+        <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
+          <div>
+            <div class="text-xs font-bold text-indigo-900 uppercase tracking-wider">Nap Nhanh Ho So Mau</div>
+            <div class="text-xs text-slate-600 mt-0.5">Thu nghiem nhanh cac kieu sinh vien dien hinh trong giang duong:</div>
           </div>
-
-          <!-- Row 2: Early Progress Quizzes -->
-          <div class="grid grid-cols-2 gap-3">
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Diem Quiz 1 (Thang 10)</label>
-              <input type="number" id="quiz_1" step="0.1" min="0" max="10" value="7.0" class="input-field mono">
-            </div>
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Diem Quiz 2 (Thang 10)</label>
-              <input type="number" id="quiz_2" step="0.1" min="0" max="10" value="6.5" class="input-field mono">
-            </div>
-          </div>
-
-          <!-- Row 3: Engagement & Attendance -->
-          <div class="grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">So buoi vang hoc</label>
-              <input type="number" id="absences" min="0" max="15" value="1" class="input-field mono">
-            </div>
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Bai tap nop tre han</label>
-              <input type="number" id="late_submissions" min="0" max="10" value="0" class="input-field mono">
-            </div>
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Tuong tac LMS/tuan</label>
-              <input type="number" id="lms_access_frequency" min="0" max="60" value="15" class="input-field mono">
-            </div>
-          </div>
-
-          <!-- Row 4: Study Habits & Routine -->
-          <div class="grid grid-cols-3 gap-3">
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Gio tu hoc/tuan</label>
-              <input type="number" id="study_hours_weekly" step="0.5" min="0" max="50" value="12.0" class="input-field mono">
-            </div>
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Thoi gian di chuyen (phut)</label>
-              <input type="number" id="commute_minutes" min="5" max="180" value="30" class="input-field mono">
-            </div>
-            <div>
-              <label class="block text-xs text-[#a1a1aa] mb-1">Lam them (Part-time)</label>
-              <select id="part_time_job" class="input-field mono">
-                <option value="0">Khong</option>
-                <option value="1">Co</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="pt-2">
-            <button type="submit" id="submit-btn" class="btn btn-primary w-full py-2.5 text-xs font-semibold">
-              Chay Chan Doan Nguy Co Hoc Vu
+          <div class="flex flex-wrap gap-2">
+            <button class="btn bg-white hover:bg-emerald-50 border border-emerald-200 text-emerald-700 text-xs shadow-sm" onclick="loadPreset('safe')">
+              Gương Mau (An toan)
+            </button>
+            <button class="btn bg-white hover:bg-amber-50 border border-amber-200 text-amber-700 text-xs shadow-sm" onclick="loadPreset('declining')">
+              Sa Sut Giua Ky (Canh bao)
+            </button>
+            <button class="btn bg-white hover:bg-rose-50 border border-rose-200 text-rose-700 text-xs shadow-sm" onclick="loadPreset('critical')">
+              Bỏ Bê / Vắng Nhiều (Nguy co)
             </button>
           </div>
-        </form>
+        </div>
       </div>
 
-      <!-- Right Column: Results & Explainable AI Card -->
-      <div class="lg:col-span-5 space-y-4">
-        <!-- Probability Card -->
-        <div class="card p-5">
-          <div class="flex items-center justify-between mb-3">
-            <span class="text-xs text-[#a1a1aa] uppercase font-semibold tracking-wider">Ket Qua Du Doan</span>
-            <span id="risk-badge" class="badge bg-[#10b981]/20 text-[#10b981] border border-[#10b981]/30">An Toan</span>
+      <!-- Main Layout: Form (Left) vs Results (Right) -->
+      <div class="grid grid-cols-1 lg:grid-cols-12 gap-6">
+
+        <!-- Left Column: Input Form -->
+        <div class="lg:col-span-7 card p-6">
+          <div class="flex items-center justify-between pb-3 mb-5 border-b border-slate-100">
+            <h2 class="text-sm font-bold text-slate-800">
+              Thong Tin Hoc Tap & Chuyen Can (Tuan 1 - 7)
+            </h2>
+            <span class="text-xs text-slate-400">11 dac trung dau vao</span>
           </div>
 
-          <div class="flex items-baseline gap-2 mb-2">
-            <span id="risk-prob" class="text-3xl font-bold mono">14.2%</span>
-            <span class="text-xs text-[#71717a]">xac suat rot mon</span>
-          </div>
+          <form id="risk-form" onsubmit="handlePredict(event)" class="space-y-4">
 
-          <!-- Progress Bar -->
-          <div class="w-full bg-[#18181c] h-2 rounded-full overflow-hidden mb-4 border border-[#27272a]">
-            <div id="risk-progress" class="bg-[#10b981] h-full transition-all duration-300" style="width: 14.2%"></div>
-          </div>
+            <!-- Group 1: Academic History -->
+            <div>
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Nen Tang Hoc Vu Qua Khu</div>
+              <div class="grid grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">GPA cac ky truoc</label>
+                  <input type="number" id="previous_gpa" step="0.1" min="0" max="4" value="2.8" class="input-box mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">So mon tung no</label>
+                  <input type="number" id="past_failures" min="0" max="10" value="0" class="input-box mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Tin chi hoc ky nay</label>
+                  <input type="number" id="credits_enrolled" min="10" max="30" value="16" class="input-box mono">
+                </div>
+              </div>
+            </div>
 
-          <!-- Derived Metrics Summary -->
-          <div class="grid grid-cols-3 gap-2 border-t border-[#27272a] pt-3 text-center">
-            <div>
-              <div class="text-[10px] text-[#71717a]">Xu huong diem</div>
-              <div id="metric-trend" class="mono text-xs font-semibold mt-0.5">-0.5</div>
+            <!-- Group 2: Early Progress Quizzes -->
+            <div class="pt-2 border-t border-slate-100">
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Diem Kiem Tra Tien Trinh</div>
+              <div class="grid grid-cols-2 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Quiz 1 (Tuan 3 - Thang 10)</label>
+                  <input type="number" id="quiz_1" step="0.1" min="0" max="10" value="7.0" class="input-box mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Quiz 2 (Tuan 6 - Thang 10)</label>
+                  <input type="number" id="quiz_2" step="0.1" min="0" max="10" value="6.5" class="input-box mono">
+                </div>
+              </div>
             </div>
-            <div>
-              <div class="text-[10px] text-[#71717a]">Diem Quiz TB</div>
-              <div id="metric-avg" class="mono text-xs font-semibold mt-0.5">6.8</div>
+
+            <!-- Group 3: Engagement & Attendance -->
+            <div class="pt-2 border-t border-slate-100">
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Chuyen Can & Tuong Tac</div>
+              <div class="grid grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">So buoi vang hoc</label>
+                  <input type="number" id="absences" min="0" max="15" value="1" class="input-box mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Nop bai muon</label>
+                  <input type="number" id="late_submissions" min="0" max="10" value="0" class="input-box mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Truy cap LMS/tuan</label>
+                  <input type="number" id="lms_access_frequency" min="0" max="60" value="15" class="input-box mono">
+                </div>
+              </div>
             </div>
-            <div>
-              <div class="text-[10px] text-[#71717a]">Tu hoc/Tin chi</div>
-              <div id="metric-ratio" class="mono text-xs font-semibold mt-0.5">0.75h</div>
+
+            <!-- Group 4: Life Context -->
+            <div class="pt-2 border-t border-slate-100">
+              <div class="text-[11px] font-bold text-slate-400 uppercase tracking-wider mb-2">Thoi Gian & Sinh Hoat</div>
+              <div class="grid grid-cols-3 gap-3">
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Gio tu hoc/tuan</label>
+                  <input type="number" id="study_hours_weekly" step="0.5" min="0" max="50" value="12.0" class="input-box mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Di chuyen (phut)</label>
+                  <input type="number" id="commute_minutes" min="5" max="180" value="30" class="input-box mono">
+                </div>
+                <div>
+                  <label class="block text-xs font-medium text-slate-700 mb-1">Lam them (Part-time)</label>
+                  <select id="part_time_job" class="input-box mono">
+                    <option value="0">Khong</option>
+                    <option value="1">Co di lam</option>
+                  </select>
+                </div>
+              </div>
             </div>
-          </div>
+
+            <div class="pt-3">
+              <button type="submit" id="submit-btn" class="btn btn-primary w-full py-3 text-sm font-semibold">
+                Chay Chan Doan Nguy Co Hoc Vu
+              </button>
+            </div>
+          </form>
         </div>
 
-        <!-- Explainable AI (SHAP Attribution) -->
-        <div class="card p-5">
-          <h3 class="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider mb-3">Boc Tach Nguyen Nhan (SHAP Attribution)</h3>
-          
-          <div class="space-y-3">
-            <div>
-              <div class="text-[11px] text-[#ef4444] font-medium mb-1.5">Top yeu to day nguy co len cao:</div>
-              <ul id="risk-drivers" class="space-y-1 text-xs mono text-[#f4f4f5]">
-                <li class="flex justify-between text-[#a1a1aa] py-0.5 border-b border-[#27272a]">
-                  <span>Vang hoc (absences = 1)</span>
-                  <span class="text-[#ef4444]">+0.14</span>
-                </li>
-              </ul>
+        <!-- Right Column: Visual Diagnostic Card -->
+        <div class="lg:col-span-5 space-y-5">
+
+          <!-- Risk Score Card with Circular Gauge -->
+          <div class="card p-6">
+            <div class="flex items-center justify-between pb-3 mb-4 border-b border-slate-100">
+              <span class="text-xs font-bold text-slate-400 uppercase tracking-wider">Danh Gia Tong Quan</span>
+              <span id="risk-badge" class="badge-chip bg-emerald-50 text-emerald-700 border border-emerald-200">
+                An Toan
+              </span>
             </div>
 
-            <div>
-              <div class="text-[11px] text-[#10b981] font-medium mb-1.5">Yeu to giup giam thieu rui ro:</div>
-              <ul id="protective-factors" class="space-y-1 text-xs mono text-[#f4f4f5]">
-                <li class="flex justify-between text-[#a1a1aa] py-0.5 border-b border-[#27272a]">
-                  <span>GPA ky truoc (gpa = 2.8)</span>
-                  <span class="text-[#10b981]">-0.32</span>
-                </li>
-              </ul>
+            <div class="flex items-center gap-6 my-2">
+              <!-- SVG Gauge Meter -->
+              <div class="relative w-28 h-28 flex-shrink-0 flex items-center justify-center">
+                <svg class="w-full h-full gauge-svg" viewBox="0 0 100 100">
+                  <circle cx="50" cy="50" r="40" stroke-width="9" fill="none" class="gauge-bg"/>
+                  <circle id="gauge-circle" cx="50" cy="50" r="40" stroke-width="9" fill="none"
+                          stroke="#10b981" class="gauge-fill"
+                          stroke-dasharray="251.2" stroke-dashoffset="215"/>
+                </svg>
+                <div class="absolute inset-0 flex flex-col items-center justify-center">
+                  <span id="risk-prob" class="text-2xl font-black text-slate-900 mono leading-none">14.2%</span>
+                  <span class="text-[10px] text-slate-400 font-medium mt-1">Xac suat</span>
+                </div>
+              </div>
+
+              <!-- Key Indicators Pill -->
+              <div class="flex-1 space-y-2.5">
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500">Xu huong diem:</span>
+                  <span id="metric-trend" class="mono font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded">+0.5</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500">Diem Quiz TB:</span>
+                  <span id="metric-avg" class="mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">6.8 / 10</span>
+                </div>
+                <div class="flex justify-between items-center text-xs">
+                  <span class="text-slate-500">Tu hoc / Tin chi:</span>
+                  <span id="metric-ratio" class="mono font-bold text-slate-800 bg-slate-100 px-2 py-0.5 rounded">0.75h/tc</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
+              <span>Nguong canh bao toi uu: 75.0%</span>
+              <span class="mono">ROC-AUC: 0.981</span>
             </div>
           </div>
-        </div>
 
-        <!-- Recommendations Card -->
-        <div class="card p-5">
-          <h3 class="text-xs font-semibold text-[#a1a1aa] uppercase tracking-wider mb-2">Khuyen Nghi Can Thiep Som</h3>
-          <ul id="recommendations-list" class="space-y-1.5 text-xs text-[#a1a1aa]">
-            <li class="flex items-start gap-1.5">
-              <span class="text-[#3b82f6]">•</span>
-              <span>Duy tri phong do hoc tap hien tai va tap trung on tap giai doan nuoc rut cuoi ky.</span>
-            </li>
-          </ul>
+          <!-- SHAP Attribution Breakdown -->
+          <div class="card p-6">
+            <h3 class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
+              Boc Tach Nguyen Nhan (SHAP Attribution)
+            </h3>
+
+            <!-- Diverging visual bars -->
+            <div class="space-y-4">
+              <div>
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-semibold text-rose-700 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-rose-500"></span> Yeu to lam tang nguy co:
+                  </span>
+                  <span class="text-[11px] text-slate-400 mono">SHAP Value (+)</span>
+                </div>
+                <div id="risk-drivers-container" class="space-y-2">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+
+              <div class="pt-2 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                  <span class="font-semibold text-emerald-700 flex items-center gap-1">
+                    <span class="w-2 h-2 rounded-full bg-emerald-500"></span> Yeu to giup giam thieu rui ro:
+                  </span>
+                  <span class="text-[11px] text-slate-400 mono">SHAP Value (-)</span>
+                </div>
+                <div id="protective-factors-container" class="space-y-2">
+                  <!-- Injected via JS -->
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Actionable Recommendations Card -->
+          <div class="card p-6 bg-gradient-to-br from-white to-indigo-50/40 border-indigo-100">
+            <h3 class="text-xs font-bold text-indigo-950 uppercase tracking-wider mb-3">
+              Khuyen Nghi Can Thiep Som
+            </h3>
+            <ul id="recommendations-list" class="space-y-2 text-xs text-slate-700">
+              <!-- Injected via JS -->
+            </ul>
+          </div>
+
         </div>
       </div>
     </div>
+
+    <!-- ══════════════ TAB 2: MODEL ANALYTICS & FIGURES ══════════════ -->
+    <div id="view-analytics" class="hidden space-y-6">
+
+      <div class="card p-5 bg-white">
+        <h2 class="text-base font-bold text-slate-900 mb-1">Ket Qua Thuc Nghiem & Minh Chung So Lieu</h2>
+        <p class="text-xs text-slate-500">
+          Toan bo cac bieu do duoi day duoc sinh tu dong boi script danh gia Machine Learning (`src/evaluate.py` va `src/explain.py`) tren tap test doc lap.
+        </p>
+      </div>
+
+      <!-- Figure Grid 1: Model Comparison & ROC-PR -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card p-5">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">1. So Sanh 3 Thuat Toan Phan Loai</h3>
+          <p class="text-xs text-slate-500 mb-3">Doi chieu Accuracy, Precision, Recall, F1 va ROC-AUC tren tap kiem thu.</p>
+          <img src="/figures/model_comparison.png" alt="Model Comparison" class="w-full rounded-lg border border-slate-100">
+        </div>
+
+        <div class="card p-5">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">2. Duong Cong ROC & Precision-Recall</h3>
+          <p class="text-xs text-slate-500 mb-3">Ca 3 mo hinh deu dat AUC vuot troi (> 0.96) nho dac trung duoc thiet ke chat che.</p>
+          <img src="/figures/roc_pr_curves.png" alt="ROC & PR Curves" class="w-full rounded-lg border border-slate-100">
+        </div>
+      </div>
+
+      <!-- Figure Grid 2: Confusion Matrix & SHAP Summary -->
+      <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card p-5">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">3. Toi Uu Nguong Cat (Threshold Tuning)</h3>
+          <p class="text-xs text-slate-500 mb-3">Ma tran loi truoc (0.50) va sau tinh chinh (0.75) de uu tien bao phu Recall >= 87%.</p>
+          <img src="/figures/confusion_matrices.png" alt="Confusion Matrices" class="w-full rounded-lg border border-slate-100">
+        </div>
+
+        <div class="card p-5">
+          <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">4. SHAP Feature Attribution Summary</h3>
+          <p class="text-xs text-slate-500 mb-3">Biểu đồ beeswarm bóc tách các đặc trưng tác động mạnh nhất tới việc rớt môn.</p>
+          <img src="/figures/shap_summary.png" alt="SHAP Summary" class="w-full rounded-lg border border-slate-100">
+        </div>
+      </div>
+
+    </div>
+
   </div>
 
   <script>
     let presets = {};
 
-    // Load initial presets
+    function switchTab(tab) {
+      const isDiag = tab === 'diag';
+      document.getElementById('view-diag').classList.toggle('hidden', !isDiag);
+      document.getElementById('view-analytics').classList.toggle('hidden', isDiag);
+
+      document.getElementById('tab-btn-diag').classList.toggle('active', isDiag);
+      document.getElementById('tab-btn-analytics').classList.toggle('active', !isDiag);
+    }
+
     async function initPresets() {
       try {
         const res = await fetch('/api/sample-profiles');
@@ -326,66 +524,99 @@
     }
 
     function updateUI(res) {
-      // Risk probability & badge
-      document.getElementById('risk-prob').innerText = res.risk_probability + '%';
+      // 1. Probability & Badge
+      const prob = res.risk_probability;
+      document.getElementById('risk-prob').innerText = prob.toFixed(1) + '%';
+      
       const badge = document.getElementById('risk-badge');
       badge.innerText = res.risk_label;
-      badge.style.backgroundColor = res.status_color + '25';
-      badge.style.color = res.status_color;
-      badge.style.borderColor = res.status_color + '40';
+      
+      let strokeColor = '#10b981';
+      if (prob >= 70.0) {
+        strokeColor = '#e11d48';
+        badge.className = 'badge-chip bg-rose-50 text-rose-700 border border-rose-200';
+      } else if (prob >= 35.0) {
+        strokeColor = '#d97706';
+        badge.className = 'badge-chip bg-amber-50 text-amber-700 border border-amber-200';
+      } else {
+        strokeColor = '#059669';
+        badge.className = 'badge-chip bg-emerald-50 text-emerald-700 border border-emerald-200';
+      }
 
-      const prog = document.getElementById('risk-progress');
-      prog.style.width = Math.min(100, Math.max(0, res.risk_probability)) + '%';
-      prog.style.backgroundColor = res.status_color;
+      // 2. Circular Gauge
+      const totalLen = 251.2;
+      const offset = totalLen - (prob / 100) * totalLen;
+      const circle = document.getElementById('gauge-circle');
+      circle.style.strokeDashoffset = offset;
+      circle.style.stroke = strokeColor;
 
-      // Derived metrics
+      // 3. Derived metrics
       const trend = res.features_derived.score_trend;
       const trendEl = document.getElementById('metric-trend');
       trendEl.innerText = (trend > 0 ? '+' : '') + trend;
-      trendEl.style.color = trend < 0 ? '#ef4444' : '#10b981';
+      trendEl.className = 'mono font-bold px-2 py-0.5 rounded ' + (trend < 0 ? 'text-rose-700 bg-rose-50' : 'text-emerald-700 bg-emerald-50');
 
-      document.getElementById('metric-avg').innerText = res.features_derived.quiz_average;
-      document.getElementById('metric-ratio').innerText = res.features_derived.study_per_credit + 'h';
+      document.getElementById('metric-avg').innerText = res.features_derived.quiz_average + ' / 10';
+      document.getElementById('metric-ratio').innerText = res.features_derived.study_per_credit + 'h/tc';
 
-      // SHAP drivers
-      const driversEl = document.getElementById('risk-drivers');
-      driversEl.innerHTML = '';
+      // 4. SHAP Risk Drivers (Red visual bars)
+      const riskContainer = document.getElementById('risk-drivers-container');
+      riskContainer.innerHTML = '';
       if (res.shap_explanation.top_risk_drivers.length === 0) {
-        driversEl.innerHTML = '<li class="text-[#71717a]">Khong ghi nhan yeu to rui ro dang ke</li>';
+        riskContainer.innerHTML = '<div class="text-xs text-slate-400 py-1">Khong co yeu to rui ro dang ke</div>';
       } else {
         res.shap_explanation.top_risk_drivers.forEach(d => {
-          const li = document.createElement('li');
-          li.className = 'flex justify-between py-0.5 border-b border-[#27272a]';
-          li.innerHTML = `<span>${d.feature} (${d.value})</span><span class="text-[#ef4444]">+${d.shap_value}</span>`;
-          driversEl.appendChild(li);
+          const pct = Math.min(100, Math.max(15, (d.shap_value / 3.0) * 100));
+          const el = document.createElement('div');
+          el.className = 'text-xs';
+          el.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-slate-700 font-medium">${d.feature} <span class="text-slate-400 font-normal">(${d.value})</span></span>
+              <span class="text-rose-600 font-bold mono">+${d.shap_value.toFixed(2)}</span>
+            </div>
+            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div class="bg-rose-500 h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+            </div>
+          `;
+          riskContainer.appendChild(el);
         });
       }
 
-      // Protective factors
-      const protEl = document.getElementById('protective-factors');
-      protEl.innerHTML = '';
+      // 5. SHAP Protective Factors (Green visual bars)
+      const protContainer = document.getElementById('protective-factors-container');
+      protContainer.innerHTML = '';
       if (res.shap_explanation.top_protective.length === 0) {
-        protEl.innerHTML = '<li class="text-[#71717a]">Chua co yeu to bao ve manh</li>';
+        protContainer.innerHTML = '<div class="text-xs text-slate-400 py-1">Chua co yeu to bao ve manh</div>';
       } else {
         res.shap_explanation.top_protective.forEach(p => {
-          const li = document.createElement('li');
-          li.className = 'flex justify-between py-0.5 border-b border-[#27272a]';
-          li.innerHTML = `<span>${p.feature} (${p.value})</span><span class="text-[#10b981]">${p.shap_value}</span>`;
-          protEl.appendChild(li);
+          const pct = Math.min(100, Math.max(15, (Math.abs(p.shap_value) / 3.0) * 100));
+          const el = document.createElement('div');
+          el.className = 'text-xs';
+          el.innerHTML = `
+            <div class="flex justify-between items-center mb-1">
+              <span class="text-slate-700 font-medium">${p.feature} <span class="text-slate-400 font-normal">(${p.value})</span></span>
+              <span class="text-emerald-600 font-bold mono">${p.shap_value.toFixed(2)}</span>
+            </div>
+            <div class="w-full bg-slate-100 h-1.5 rounded-full overflow-hidden">
+              <div class="bg-emerald-500 h-full rounded-full transition-all duration-300" style="width: ${pct}%"></div>
+            </div>
+          `;
+          protContainer.appendChild(el);
         });
       }
 
-      // Recommendations
-      const recsEl = document.getElementById('recommendations-list');
-      recsEl.innerHTML = '';
+      // 6. Actionable recommendations
+      const recsList = document.getElementById('recommendations-list');
+      recsList.innerHTML = '';
       res.recommendations.forEach(r => {
         const li = document.createElement('li');
-        li.className = 'flex items-start gap-1.5';
-        li.innerHTML = `<span class="text-[#3b82f6]">•</span><span>${r}</span>`;
-        recsEl.appendChild(li);
+        li.className = 'flex items-start gap-2';
+        li.innerHTML = `<span class="text-indigo-600 font-bold mt-0.5">•</span><span>${r}</span>`;
+        recsList.appendChild(li);
       });
     }
 
+    // Initialize
     initPresets();
   </script>
 </body>

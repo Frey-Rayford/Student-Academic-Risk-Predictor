@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import json
 import joblib
@@ -27,6 +27,10 @@ app = FastAPI(title="Student Academic Risk Predictor API", version="1.0.0")
 STATIC_DIR = os.path.join(os.path.dirname(__file__), "static")
 os.makedirs(STATIC_DIR, exist_ok=True)
 app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+
+FIGURES_DIR = os.path.join(BASE_DIR, "reports", "figures")
+if os.path.exists(FIGURES_DIR):
+    app.mount("/figures", StaticFiles(directory=FIGURES_DIR), name="figures")
 
 # Load model & metadata
 MODELS_DIR = os.path.join(BASE_DIR, "models")
