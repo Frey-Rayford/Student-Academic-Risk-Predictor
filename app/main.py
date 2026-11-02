@@ -77,7 +77,7 @@ async def predict_risk(profile: StudentProfile):
     prob_risk = float(model.predict_proba(df_feat)[0, 1])
     is_at_risk = bool(prob_risk >= OPTIMAL_THRESHOLD)
     
-    if prob_risk >= 0.70:
+    if is_at_risk:
         risk_level = "HIGH_RISK"
         risk_label = "Nguy Cơ Cao"
         status_color = "#ef4444"
@@ -108,6 +108,8 @@ async def predict_risk(profile: StudentProfile):
         recommendations.append("Duy trì phong độ học tập tích cực hiện tại và tập trung chuẩn bị tốt cho kỳ thi cuối kỳ.")
 
     return {
+        "data_kind": metadata.get("data_kind", "synthetic"),
+        "model_name": metadata["best_model_name"],
         "risk_probability": round(prob_risk * 100, 1),
         "is_at_risk": is_at_risk,
         "risk_level": risk_level,
@@ -122,6 +124,11 @@ async def predict_risk(profile: StudentProfile):
         "shap_explanation": explanation,
         "recommendations": recommendations
     }
+
+@app.get("/api/model-info")
+async def model_info():
+    return {"model_name": metadata["best_model_name"], "data_kind": metadata.get("data_kind", "synthetic"),
+            "threshold": OPTIMAL_THRESHOLD, "test_metrics": metadata["tuned_metrics"]}
 
 @app.get("/api/sample-profiles")
 async def get_sample_profiles():

@@ -1,90 +1,64 @@
-import os
-import sys
 import json
+from pathlib import Path
+
 import joblib
-import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
+import matplotlib.pyplot as plt
 import shap
-from lightgbm import LGBMClassifier
+from sklearn.pipeline import Pipeline
 
-try:
-    from src.features import FEATURE_COLUMNS, engineer_features
-except ImportError:
-    from features import FEATURE_COLUMNS, engineer_features
+from src.features import FEATURE_COLUMNS, engineer_features
 
-if hasattr(sys.stdout, "reconfigure"):
-    try:
-        sys.stdout.reconfigure(encoding="utf-8")
-    except Exception:
-        pass
 
-def generate_shap_reports(base_dir: str):
-    data_dir = os.path.join(base_dir, "data", "processed")
-    figures_dir = os.path.join(base_dir, "reports", "figures")
-    models_dir = os.path.join(base_dir, "models")
-    os.makedirs(figures_dir, exist_ok=True)
+def explain_features(model, background, features):
+    if isinstance(model, Pipeline):
+        transformer = model[:-1]
+        classifier = model[-1]
+        values = transformer.transform(features)
+        reference = transformer.transform(background)
+        result = shap.LinearExplainer(classifier, reference)(values)
+        result.data = features.to_numpy()
+        result.feature_names = list(features.columns)
+        return result, "log_odds"
+    result = shap.TreeExplainer(model)(features)
+    if result.values.ndim == 3:
+        result = result[:, :, 1]
+    space = "probability" if hasattr(model, "estimators_") and not hasattr(model, "booster_") else "log_odds"
+    return result, space
 
-    train_df = pd.read_csv(os.path.join(data_dir, "train.csv"))
-    test_df = pd.read_csv(os.path.join(data_dir, "test.csv"))
 
-    X_train = train_df[FEATURE_COLUMNS]
-    y_train = train_df["at_risk"]
-    X_test = test_df[FEATURE_COLUMNS]
-    y_test = test_df["at_risk"]
+def load_explanation(base_dir, features):
+    root = Path(base_dir)
+    model = joblib.load(root / "models/best_model.joblib")
+    background = pd.read_csv(root / "data/processed/train.csv")[FEATURE_COLUMNS]
+    return explain_features(model, background, features)
 
-    # Su dung LightGBM de tao TreeExplainer toi uu
-    lgb_model = LGBMClassifier(
-        n_estimators=150, max_depth=5, learning_rate=0.04, class_weight="balanced",
-        random_state=42, verbose=-1
-    )
-    lgb_model.fit(X_train, y_train)
 
-    explainer = shap.TreeExplainer(lgb_model)
-    shap_values = explainer(X_test)
-
-    # 1. Ve SHAP Summary Beeswarm Plot
-    plt.figure(figsize=(10, 6.5), dpi=180)
-    shap.summary_plot(shap_values, X_test, show=False, max_display=12)
-    plt.title("SHAP Feature Attribution (Yeu To Quyen Dinh Nguy Co Rot Mon)", fontsize=11, fontweight="bold", pad=12)
+def generate_shap_reports(base_dir):
+    root = Path(base_dir)
+    features = pd.read_csv(root / "data/processed/test.csv")[FEATURE_COLUMNS]
+    explanation, space = load_explanation(root, features)
+    metadata = json.loads((root / "models/model_metadata.json").read_text(encoding="utf-8"))
+    figures = root / "reports/figures"
+    figures.mkdir(parents=True, exist_ok=True)
+    shap.summary_plot(explanation, features, show=False, max_display=12)
+    plt.title(f"{metadata['best_model_name']} SHAP ({space}; synthetic data)")
     plt.tight_layout()
-    chart_summary_path = os.path.join(figures_dir, "shap_summary.png")
-    plt.savefig(chart_summary_path)
+    plt.savefig(figures / "shap_summary.png", dpi=160)
     plt.close()
-    print(f"Da luu bieu do SHAP Summary: {chart_summary_path}")
-
-    # 2. Ve SHAP Waterfall cho 1 sinh vien co nguy co cao dien hinh
-    high_risk_indices = np.where((y_test == 1) & (lgb_model.predict_proba(X_test)[:, 1] > 0.85))[0]
-    sample_idx = int(high_risk_indices[0]) if len(high_risk_indices) > 0 else 0
-
-    plt.figure(figsize=(9, 5.5), dpi=180)
-    shap.plots.waterfall(shap_values[sample_idx], max_display=9, show=False)
-    plt.title(f"SHAP Waterfall: Giai Thich Du Doan Cho Sinh Vien #{sample_idx+1}", fontsize=11, fontweight="bold", pad=12)
+    shap.plots.waterfall(explanation[0], max_display=9, show=False)
+    plt.title(f"Sample 1 — {metadata['best_model_name']} ({space})")
     plt.tight_layout()
-    chart_sample_path = os.path.join(figures_dir, "shap_student_sample.png")
-    plt.savefig(chart_sample_path)
+    plt.savefig(figures / "shap_student_sample.png", dpi=160)
     plt.close()
-    print(f"Da luu bieu do SHAP Waterfall mau: {chart_sample_path}")
 
-    # Luu explainer vao models
-    joblib.dump(lgb_model, os.path.join(models_dir, "explainer_model.joblib"))
 
-def explain_single_student(student_dict: dict, base_dir: str):
-    """
-    Ham tien ich cho API va Dashboard: Giai thich 3 yeu to rui ro lon nhat cua 1 sinh vien.
-    """
-    models_dir = os.path.join(base_dir, "models")
-    lgb_model = joblib.load(os.path.join(models_dir, "explainer_model.joblib"))
-    
-    df_raw = pd.DataFrame([student_dict])
-    df_feat = engineer_features(df_raw)[FEATURE_COLUMNS]
-    
-    explainer = shap.TreeExplainer(lgb_model)
-    shap_vals = explainer(df_feat)
-    
-    values = shap_vals.values[0]
-    feature_names = FEATURE_COLUMNS
-    
+def explain_single_student(student_dict, base_dir):
+    df_feat = engineer_features(pd.DataFrame([student_dict]))[FEATURE_COLUMNS]
+    explanation, space = load_explanation(base_dir, df_feat)
+    values = explanation.values[0]
+    metadata = json.loads((Path(base_dir) / "models/model_metadata.json").read_text(encoding="utf-8"))
     feature_vn_names = {
         "quiz_2": "Điểm kiểm tra Quiz 2",
         "quiz_1": "Điểm kiểm tra Quiz 1",
@@ -105,25 +79,21 @@ def explain_single_student(student_dict: dict, base_dir: str):
         "lms_intensity": "Mức độ tương tác LMS"
     }
 
-    # Sap xep theo muc do day nguy co len cao (SHAP duong lon nhat)
-    impact_list = []
-    for f_name, f_val, s_val in zip(feature_names, df_feat.iloc[0], values):
-        impact_list.append({
-            "feature": f_name,
-            "feature_label": feature_vn_names.get(f_name, f_name),
-            "value": float(np.round(f_val, 2)),
-            "shap_value": float(np.round(s_val, 3))
-        })
-        
-    impact_list.sort(key=lambda x: x["shap_value"], reverse=True)
-    top_risk_drivers = [item for item in impact_list if item["shap_value"] > 0][:3]
-    top_protective = [item for item in reversed(impact_list) if item["shap_value"] < 0][:2]
-    
+    impacts = [{
+        "feature": name,
+        "feature_label": feature_vn_names.get(name, name),
+        "value": float(df_feat.iloc[0][name]),
+        "shap_value": round(float(value), 3),
+    } for name, value in zip(FEATURE_COLUMNS, values)]
+    impacts.sort(key=lambda row: row["shap_value"], reverse=True)
     return {
-        "top_risk_drivers": top_risk_drivers,
-        "top_protective": top_protective
+        "model_name": metadata["best_model_name"],
+        "output_space": space,
+        "base_value": float(np.asarray(explanation.base_values).reshape(-1)[0]),
+        "top_risk_drivers": [row for row in impacts if row["shap_value"] > 0][:3],
+        "top_protective": [row for row in reversed(impacts) if row["shap_value"] < 0][:2],
     }
 
+
 if __name__ == "__main__":
-    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-    generate_shap_reports(base_dir)
+    generate_shap_reports(Path(__file__).resolve().parents[1])

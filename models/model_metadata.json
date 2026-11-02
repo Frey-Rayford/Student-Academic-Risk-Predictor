@@ -1,4 +1,35 @@
 {
+  "data_kind": "synthetic",
+  "random_state": 42,
+  "selection_split": "validation",
+  "threshold_split": "validation",
+  "validation_metrics": {
+    "Logistic_Regression": {
+      "accuracy": 0.9333,
+      "precision": 0.9018,
+      "recall": 0.9528,
+      "f1_score": 0.9266,
+      "roc_auc": 0.9868,
+      "pr_auc": 0.9854
+    },
+    "Random_Forest": {
+      "accuracy": 0.8875,
+      "precision": 0.8559,
+      "recall": 0.8962,
+      "f1_score": 0.8756,
+      "roc_auc": 0.9679,
+      "pr_auc": 0.9649
+    },
+    "LightGBM": {
+      "accuracy": 0.9292,
+      "precision": 0.9238,
+      "recall": 0.9151,
+      "f1_score": 0.9194,
+      "roc_auc": 0.9745,
+      "pr_auc": 0.9712
+    }
+  },
+  "validation_samples": 240,
   "best_model_name": "Logistic_Regression",
   "feature_columns": [
     "credits_enrolled",
@@ -21,39 +52,39 @@
   ],
   "default_metrics": {
     "Logistic_Regression": {
-      "accuracy": 0.8917,
-      "precision": 0.8448,
-      "recall": 0.9245,
-      "f1_score": 0.8829,
-      "roc_auc": 0.9807,
-      "pr_auc": 0.9784
+      "accuracy": 0.8958,
+      "precision": 0.8462,
+      "recall": 0.934,
+      "f1_score": 0.8879,
+      "roc_auc": 0.9828,
+      "pr_auc": 0.9806
     },
     "Random_Forest": {
-      "accuracy": 0.8875,
-      "precision": 0.8496,
-      "recall": 0.9057,
-      "f1_score": 0.8767,
-      "roc_auc": 0.9673,
-      "pr_auc": 0.966
+      "accuracy": 0.875,
+      "precision": 0.822,
+      "recall": 0.9151,
+      "f1_score": 0.8661,
+      "roc_auc": 0.9678,
+      "pr_auc": 0.9658
     },
     "LightGBM": {
-      "accuracy": 0.8917,
-      "precision": 0.8571,
-      "recall": 0.9057,
-      "f1_score": 0.8807,
-      "roc_auc": 0.9714,
-      "pr_auc": 0.9688
+      "accuracy": 0.8833,
+      "precision": 0.8482,
+      "recall": 0.8962,
+      "f1_score": 0.8716,
+      "roc_auc": 0.9688,
+      "pr_auc": 0.9655
     }
   },
   "optimal_threshold": 0.75,
   "tuned_metrics": {
-    "accuracy": 0.9292,
-    "precision": 0.9588,
+    "accuracy": 0.9208,
+    "precision": 0.9394,
     "recall": 0.8774,
-    "f1_score": 0.9163,
-    "roc_auc": 0.9807,
-    "pr_auc": 0.9784
+    "f1_score": 0.9073,
+    "roc_auc": 0.9828,
+    "pr_auc": 0.9806
   },
-  "train_samples": 960,
+  "train_samples": 720,
   "test_samples": 240
 }

@@ -333,8 +333,8 @@
             </div>
 
             <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-400 flex items-center justify-between">
-              <span>Ngưỡng cảnh báo tối ưu: 75.0%</span>
-              <span class="mono">Độ phân tách ROC-AUC: 0.981</span>
+              <span id="model-threshold">Đang đọc ngưỡng mô hình…</span>
+              <span id="model-auc" class="mono"></span>
             </div>
           </div>
 
@@ -415,7 +415,7 @@
       <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
         <div class="card p-5">
           <h3 class="text-xs font-bold text-slate-800 uppercase tracking-wider mb-2">3. Tối Ưu Ngưỡng Cắt (Threshold Tuning)</h3>
-          <p class="text-xs text-slate-500 mb-3">Ma trận lỗi trước (ngưỡng 0.50) và sau khi tinh chỉnh (ngưỡng 0.75) nhằm ưu tiên độ bao phủ Recall >= 87% để không bỏ sót sinh viên.</p>
+          <p class="text-xs text-slate-500 mb-3">Ma trận lỗi trên tập test mô phỏng. Ngưỡng được chọn trên validation trước khi tính kết quả test.</p>
           <img src="/figures/confusion_matrices.png" alt="Ma trận lỗi" class="w-full rounded-lg border border-slate-100">
         </div>
 
@@ -592,7 +592,14 @@
       });
     }
 
-    // Initialize
+    async function initMetadata() {
+      const response = await fetch('/api/model-info');
+      if (!response.ok) return;
+      const info = await response.json();
+      document.getElementById('model-threshold').textContent = `Ngưỡng cảnh báo: ${(info.threshold * 100).toFixed(1)}%`;
+      document.getElementById('model-auc').textContent = `Test ROC-AUC: ${info.test_metrics.roc_auc.toFixed(3)} · dữ liệu mô phỏng`;
+    }
+    initMetadata().catch(console.error);
     initPresets();
   </script>
 </body>

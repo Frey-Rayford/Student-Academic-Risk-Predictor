@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import json
 import joblib
@@ -15,8 +15,8 @@ from sklearn.metrics import (
     roc_auc_score, average_precision_score, confusion_matrix
 )
 
-from data_loader import load_or_create_data
-from features import get_feature_matrix, FEATURE_COLUMNS
+from src.data_loader import load_or_create_data
+from src.features import get_feature_matrix, FEATURE_COLUMNS
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -39,7 +39,7 @@ def find_optimal_threshold(y_true, y_prob, min_recall=0.85):
     Tim nguong cat xac suat toi uu sao cho do bao phu (Recall) dat toi thieu 85%
     nham han che toi da viec bo sot sinh vien can ho tro hoc vu.
     """
-    thresholds = np.linspace(0.1, 0.9, 81)
+    thresholds = np.linspace(0.0, 1.0, 101)
     best_thresh = 0.5
     best_f1 = 0.0
     
@@ -78,10 +78,15 @@ def train_and_compare(base_dir: str):
         X, y, test_size=0.2, random_state=42, stratify=y
     )
 
-    # Luu tap du lieu da phan chia
+    X_train, X_val, y_train, y_val = train_test_split(
+        X_train, y_train, test_size=0.25, random_state=42, stratify=y_train
+    )
+
+    # Keep test rows out of model selection and threshold tuning.
     train_df = pd.concat([X_train, y_train], axis=1)
     test_df = pd.concat([X_test, y_test], axis=1)
     train_df.to_csv(os.path.join(data_dir, "processed", "train.csv"), index=False)
+    pd.concat([X_val, y_val], axis=1).to_csv(os.path.join(data_dir, "processed", "validation.csv"), index=False)
     test_df.to_csv(os.path.join(data_dir, "processed", "test.csv"), index=False)
 
     # 3. Khoi tao 3 mo hinh
@@ -104,7 +109,7 @@ def train_and_compare(base_dir: str):
     probs_dict = {}
 
     print("\n------------------------------------------------------------")
-    print("KET QUA HUAN LUYEN VA DANH GIA TREN TAP TEST (DEFAULT THRESHOLD = 0.5)")
+    print("MODEL COMPARISON ON VALIDATION SET (DEFAULT THRESHOLD = 0.5)")
     print("------------------------------------------------------------")
     print(f"{'Model':<22} | {'Accuracy':<8} | {'Precision':<9} | {'Recall':<7} | {'F1':<7} | {'ROC-AUC':<8}")
     print("------------------------------------------------------------")
@@ -114,11 +119,11 @@ def train_and_compare(base_dir: str):
         fitted_models[name] = model
 
         # Du doan xac suat
-        y_prob = model.predict_proba(X_test)[:, 1]
+        y_prob = model.predict_proba(X_val)[:, 1]
         probs_dict[name] = y_prob
         y_pred = (y_prob >= 0.5).astype(int)
 
-        metrics = evaluate_predictions(y_test, y_pred, y_prob)
+        metrics = evaluate_predictions(y_val, y_pred, y_prob)
         results[name] = metrics
 
         print(
@@ -136,12 +141,19 @@ def train_and_compare(base_dir: str):
     print("------------------------------------------------------------")
 
     # 5. Threshold Tuning cho mo hinh tot nhat
-    optimal_th = find_optimal_threshold(y_test, best_prob, min_recall=0.85)
+    optimal_th = find_optimal_threshold(y_val, best_prob, min_recall=0.85)
+    validation_results = results.copy()
+    results = {}
+    for name, fitted in fitted_models.items():
+        probability = fitted.predict_proba(X_test)[:, 1]
+        results[name] = evaluate_predictions(y_test, probability >= 0.5, probability)
+        joblib.dump(fitted, os.path.join(models_dir, f"{name}.joblib"))
+    best_prob = best_model.predict_proba(X_test)[:, 1]
     tuned_preds = (best_prob >= optimal_th).astype(int)
     tuned_metrics = evaluate_predictions(y_test, tuned_preds, best_prob)
 
     print(f"Nguong cat toi uu (Threshold Tuning): {optimal_th} (Thay vi 0.5)")
-    print(f"- Recall sau tinh chinh:    {tuned_metrics['recall']:.4f} (Dat muc tieu bao phu)")
+    print(f"Test recall: {tuned_metrics['recall']:.4f}")
     print(f"- Precision sau tinh chinh: {tuned_metrics['precision']:.4f}")
     print(f"- F1-Score sau tinh chinh:  {tuned_metrics['f1_score']:.4f}")
     print("------------------------------------------------------------\n")
@@ -151,6 +163,12 @@ def train_and_compare(base_dir: str):
     joblib.dump(best_model, model_path)
 
     metadata = {
+        "data_kind": "synthetic",
+        "random_state": 42,
+        "selection_split": "validation",
+        "threshold_split": "validation",
+        "validation_metrics": validation_results,
+        "validation_samples": len(X_val),
         "best_model_name": best_name,
         "feature_columns": FEATURE_COLUMNS,
         "default_metrics": results,

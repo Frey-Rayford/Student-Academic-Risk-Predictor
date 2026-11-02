@@ -1,4 +1,4 @@
-﻿import os
+import os
 import sys
 import json
 import joblib
@@ -11,7 +11,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.ensemble import RandomForestClassifier
 from lightgbm import LGBMClassifier
 
-from features import FEATURE_COLUMNS
+from src.features import FEATURE_COLUMNS
 
 if hasattr(sys.stdout, "reconfigure"):
     try:
@@ -40,26 +40,9 @@ def generate_evaluation_reports(base_dir: str):
     plt.rcParams["axes.edgecolor"] = "#cccccc"
     plt.rcParams["axes.linewidth"] = 0.8
 
-    # Huan luyen lai 3 mo hinh de lay probability curves
-    models = {
-        "Logistic Regression": Pipeline([
-            ("scaler", joblib.load(os.path.join(models_dir, "best_model.joblib")).named_steps["scaler"] 
-             if hasattr(joblib.load(os.path.join(models_dir, "best_model.joblib")), "named_steps") else None),
-            ("clf", LogisticRegression(max_iter=1000, class_weight="balanced", random_state=42))
-        ]),
-        "Random Forest": RandomForestClassifier(
-            n_estimators=150, max_depth=6, min_samples_leaf=4, class_weight="balanced", random_state=42
-        ),
-        "LightGBM": LGBMClassifier(
-            n_estimators=150, max_depth=5, learning_rate=0.04, class_weight="balanced",
-            random_state=42, verbose=-1
-        )
-    }
-
-    probs = {}
-    for name, model in models.items():
-        model.fit(X_train, y_train)
-        probs[name] = model.predict_proba(X_test)[:, 1]
+    models = {name.replace("_", " "): joblib.load(os.path.join(models_dir, f"{name}.joblib"))
+              for name in metadata["default_metrics"]}
+    probs = {name: model.predict_proba(X_test)[:, 1] for name, model in models.items()}
 
     # 1. Bieu do so sanh cac metrics cua 3 model
     metrics_data = metadata["default_metrics"]
@@ -68,9 +51,9 @@ def generate_evaluation_reports(base_dir: str):
 
     fig, ax = plt.subplots(figsize=(9, 4.8), dpi=180)
     df_metrics.plot(kind="bar", ax=ax, width=0.75, colormap="viridis")
-    ax.set_title("So Sanh Hieu Nang Cac Mo Hinh Phan Loai (Tap Test)", fontsize=12, pad=12, fontweight="bold")
+    ax.set_title("Model comparison — held-out synthetic test set", fontsize=12, pad=12, fontweight="bold")
     ax.set_ylabel("Diem So (0.0 - 1.0)", fontsize=10)
-    ax.set_ylim(0.7, 1.02)
+    ax.set_ylim(0, 1.02)
     ax.set_xticklabels(df_metrics.index, rotation=0, fontsize=10)
     ax.legend(["Accuracy", "Precision", "Recall", "F1-Score", "ROC-AUC"], frameon=True, facecolor="white", edgecolor="#ddd")
     plt.tight_layout()
@@ -111,7 +94,7 @@ def generate_evaluation_reports(base_dir: str):
     print(f"Da luu bieu do ROC-PR: {chart2_path}")
 
     # 3. Confusion Matrix: Truoc va sau khi tinh chinh nguong (Threshold Tuning)
-    best_prob = probs["Logistic Regression"]
+    best_prob = probs[metadata["best_model_name"].replace("_", " ")]
     opt_th = metadata["optimal_threshold"]
 
     cm_default = confusion_matrix(y_test, (best_prob >= 0.5).astype(int))
