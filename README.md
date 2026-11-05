@@ -1,6 +1,12 @@
 # Student Academic Risk Predictor
 
+[Tiếng Việt](README.md) · [English](README.en.md)
+
 Thử nghiệm phân loại nguy cơ học vụ trên 1.200 hồ sơ **mô phỏng**. Đây là bài tập về quy trình ML, chưa được kiểm chứng trên sinh viên thật.
+
+![So sánh mô hình trên tập test mô phỏng](reports/figures/model_comparison.png)
+
+Biểu đồ được tạo từ mô hình đã lưu sau bước chọn trên validation; các điểm số này thuộc dữ liệu mô phỏng.
 
 ## Chạy
 
